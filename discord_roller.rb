@@ -7,11 +7,7 @@ require_relative './lib/roller'
 Dotenv.load
 
 def nickname_or_name(event)
-  if event.user.nickname.nil?
-    event.user.name
-  else
-    event.user.nickname
-  end
+  event.user.nickname.nil? ? event.user.name : event.user.nickname
 end
 
 # Instantiate a `CommandBot`. We have to set a `prefix` here, The character that triggers command execution.
@@ -29,38 +25,35 @@ end
 bot.command(:coin, description: 'Flips a coin.') do |event|
   flip = rand < 0.5 ? 'Heads' : 'Tails'
   event << "**#{nickname_or_name(event)}** flips a coin."
-  event << " It's #{flip}!"
+  event << "Result: #{flip}!"
 end
 
-bot.command(:roll, description: 'Rolls some dice.', usage: 'roll number_of_dice, [difficulty] [explode]', min_args: 1, max_args: 3) do |event, number, difficulty, explode|
+bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice] [difficulty] [explode]', min_args: 1, max_args: 3) do |event, number, difficulty, explode|
   # convert number to int
   number = number.to_i
 
   # do 10s explode?
-  explode_words = %w[explode exp ex e]
-  explode = explode_words.include?(explode)
+  explode_prefixes = 'explode'.chars.reduce([[], '']) { |(res, memo), c| [res << memo += c, memo] }.first
+  explode = explode_prefixes.include?(explode)
 
-  # set default difficulty if missing, convert to int
-  difficulty = 6 if difficulty.nil?
-  difficulty = difficulty.to_i
+  # set default difficulty if missing, else convert to int
+  difficulty = difficulty.nil? ? 6 : difficulty.to_i
 
   # make the roll
   roll = Roller.new(number, difficulty, explode)
 
   # Determine result
-  result = if roll.success?
-             'Success'
-           elsif roll.botch?
-             'Botch'
-           else
+  result = if roll.botch?
+             '_Botch!_'
+           elsif roll.failure?
              'Failure'
+           else
+             "#{roll.check} Successes"
            end
 
   event << "**#{nickname_or_name(event)}** rolls some dice."
-  event << roll.rolls.to_s
-  event << "Successes: #{roll.successes}"
-  event << "Failures: #{roll.failures}"
-  event << "Result: #{result}!"
+  event << "Rolls: #{roll.rolls.to_s}"
+  event << "Result: #{result}"
 end
 
 bot.run
