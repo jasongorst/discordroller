@@ -48,7 +48,7 @@ bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice
            elsif roll.failure?
              'Failure'
            else
-             "#{roll.check} Successes"
+             "#{roll.check} Success#{roll.check == 1 ? '' : 'es'}"
            end
 
   event << "**#{nickname_or_name(event)}** rolls some dice."
