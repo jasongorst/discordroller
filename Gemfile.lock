@@ -40,11 +40,11 @@ PLATFORMS
   x86_64-darwin-21
 
 DEPENDENCIES
-  discordrb (~> 3.3)
-  dotenv (~> 2.5)
+  discordrb (~> 3.4)
+  dotenv (~> 2.7.6)
 
 RUBY VERSION
-   ruby 2.6.9p207
+   ruby 3.1.1p18
 
 BUNDLED WITH
-   2.3.4
+   2.3.16
