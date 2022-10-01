@@ -8,6 +8,10 @@ require_relative './lib/roller'
 
 Dotenv.load
 
+EXPLODE_PREFIXES = 'explode'.chars.reduce([[], '']) { |(res, memo), c| [res << memo += c, memo] }.first
+DEFAULT_DIFFICULTY = 6
+MAX_DICE = 20
+
 def display_name(event)
   event.user.nickname || event.user.name
 end
@@ -37,28 +41,37 @@ bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice
   # convert number to int
   number = number.to_i
 
-  # do 10s explode?
-  explode_prefixes = 'explode'.chars.reduce([[], '']) { |(res, memo), c| [res << memo += c, memo] }.first
-  explode = explode_prefixes.include?(explode)
-
   # set default difficulty if missing, else convert to int
-  difficulty = difficulty.nil? ? 6 : difficulty.to_i
+  difficulty = difficulty.nil? ? DEFAULT_DIFFICULTY : difficulty.to_i
 
-  # make the roll
-  roll = Roller.new(number, difficulty, explode)
+  # do 10s explode?
+  explode = EXPLODE_PREFIXES.include?(explode)
 
-  # Determine result
-  result = if roll.botch?
-             '_Botch!_'
-           elsif roll.failure?
-             'Failure'
-           else
-             "#{roll.check} Success#{roll.check == 1 ? '' : 'es'}"
-           end
+  if number > MAX_DICE
+    event << "That's just too many dice. Try #{MAX_DICE} or less."
+  elsif number < 1
+    event << "C'mon, give me a number of dice to roll."
+  elsif difficulty > 10
+    event << "You know you can't roll higher than 10."
+  elsif difficulty < 2
+    event << "The difficulty has to be at least 2."
+  else
+    # make the roll
+    roll = Roller.new(number, difficulty, explode)
 
-  event << "**#{display_name(event)}** rolls some dice."
-  event << "Rolls: #{roll.rolls.to_s}"
-  event << "Result: #{result}"
+    # Determine result
+    result = if roll.botch?
+               '_Botch!_'
+             elsif roll.failure?
+               'Failure'
+             else
+               "#{roll.check} Success#{roll.check == 1 ? '' : 'es'}"
+             end
+
+    event << "**#{display_name(event)}** rolls some dice."
+    event << "Rolls: #{roll.rolls.to_s}"
+    event << "Result: #{result}"
+  end
 end
 
 bot.run
