@@ -9,4 +9,5 @@ group :development do
   # use mina for deployment
   gem 'mina'
   gem 'mina-version_managers'
+  gem 'mina-dotenv'
 end
