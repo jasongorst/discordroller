@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'abbrev'
 require 'discordrb'
 require 'dotenv'
 require_relative './lib/dice'
@@ -8,7 +9,6 @@ require_relative './lib/roller'
 
 Dotenv.load
 
-EXPLODE_PREFIXES = 'explode'.chars.reduce([[], '']) { |(res, memo), c| [res << memo += c, memo] }.first
 DEFAULT_DIFFICULTY = 6
 MAX_DICE = 20
 
@@ -21,7 +21,7 @@ bot = Discordrb::Commands::CommandBot.new token: ENV['BOT_TOKEN'], prefix: '/'
 
 # Commands
 bot.command(:coin, description: 'Flips a coin.') do |event|
-  flip = rand < 0.5 ? 'Heads' : 'Tails'
+  flip = %w[Heads Tails].sample
   event << "**#{display_name(event)}** flips a coin."
   event << "Result: #{flip}!"
 end
@@ -37,7 +37,7 @@ bot.command(:dice, description: 'Rolls some other dice.', usage: 'dice [number]d
   event << "Total: #{dice.total}"
 end
 
-bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice] [difficulty] [explode]', min_args: 1, max_args: 3) do |event, number, difficulty, explode|
+bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice] [difficulty] [explode?]', min_args: 1, max_args: 3) do |event, number, difficulty, explode|
   # convert number to int
   number = number.to_i
 
@@ -45,14 +45,14 @@ bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice
   difficulty = difficulty.nil? ? DEFAULT_DIFFICULTY : difficulty.to_i
 
   # do 10s explode?
-  explode = EXPLODE_PREFIXES.include?(explode)
+  explode = Abbrev.abbrev(["explode"]).keys.include?(explode)
 
   if number > MAX_DICE
-    event << "That's just too many dice. Try #{MAX_DICE} or less."
+    event << "That's too many dice. Try #{MAX_DICE} or less."
   elsif number < 1
-    event << "C'mon, give me a number of dice to roll."
+    event << "Give me a number of dice to roll."
   elsif difficulty > 10
-    event << "You know you can't roll higher than 10."
+    event << "You can't roll higher than 10."
   elsif difficulty < 2
     event << "The difficulty has to be at least 2."
   else
