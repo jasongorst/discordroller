@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 require 'abbrev'
 require 'discordrb'
 require 'dotenv'
@@ -7,7 +6,7 @@ require_relative './lib/dice'
 require_relative './lib/dice_parser'
 require_relative './lib/roller'
 
-Dotenv.load
+Dotenv.load '.env.production'
 
 DEFAULT_DIFFICULTY = 6
 MAX_DICE = 20
