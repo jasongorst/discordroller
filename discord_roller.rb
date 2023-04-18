@@ -25,18 +25,19 @@ bot.command(:coin, description: 'Flips a coin.') do |event|
   event << "Result: #{flip}!"
 end
 
-bot.command(:dice, description: 'Rolls some other dice.', usage: 'dice [number]d[sides][+/-modifier]', min_args: 1, max_args: 1) do |event, d|
+bot.command(:dice, description: 'Rolls some dice.', usage: 'dice [number]d[sides][+/-modifier]', min_args: 1, max_args: 1) do |event, d|
+  # parse dice string
   num, sides, mod = DiceParser::parse(d)
   dice = Dice.new(num, sides, mod)
 
-  mod_str = (mod.to_i == 0 ? '' : sprintf('%+d', mod))
+  mod_str = (mod == 0 ? '' : sprintf('%+d', mod))
 
   event << "**#{display_name(event)}** rolls #{num}d#{sides}#{mod_str}."
   event << "Rolls: #{dice.results}"
   event << "Total: #{dice.total}"
 end
 
-bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice] [difficulty] [explode?]', min_args: 1, max_args: 3) do |event, number, difficulty, explode|
+bot.command(:roll, description: 'Rolls some dice for WoD.', usage: 'roll [number of dice] [difficulty] [explode?]', min_args: 1, max_args: 3) do |event, number, difficulty, explode|
   # convert number to int
   number = number.to_i
 
@@ -49,7 +50,7 @@ bot.command(:roll, description: 'Rolls some dice.', usage: 'roll [number of dice
   if number > MAX_DICE
     event << "That's too many dice. Try #{MAX_DICE} or less."
   elsif number < 1
-    event << "Give me a number of dice to roll."
+    event << "I need a number of dice to roll."
   elsif difficulty > 10
     event << "You can't roll higher than 10."
   elsif difficulty < 2
